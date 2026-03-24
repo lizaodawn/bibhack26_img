@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Historical Explorer | Deep Blue Edition</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js"></script>
+    
+     
+    <style>
+        body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background: #000; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+        
+        /* UI Panel */
+        .ui-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .map-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #0D47A1;
+            color: #0D47A1;
+            padding: 12px 18px;
+            border-radius: 30px; /* Modern rounded look */
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 1px;
+        }
+
+        .map-btn:hover {
+            background: #0D47A1;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .active-overlay {
+            background: #0D47A1 !important;
+            color: white !important;
+        }
+
+        /* Popup Styling */
+        .mapboxgl-popup-content { padding: 0; border-radius: 12px; width: 350px; overflow: hidden; }
+        .popup-header { padding: 15px; border-bottom: 3px solid #0D47A1; background: #fff; }
+        .popup-header h3 { margin: 0; font-size: 16px; color: #0D47A1; }
+        .popup-scroll-container { height: 380px; display: flex; overflow-x: auto; background: #fff; }
+        .item-card { flex: 0 0 100%; width: 100%; padding: 15px; box-sizing: border-box;}
+        .popup-img { width: 100%; height: 220px; object-fit: contain; background: #000; border-radius: 4px; }
+        .popup-text { font-size: 13px; margin-top: 10px; color: #444; line-height: 1.5; }
+    </style>
+</head>
+<body>
+
+<div class="ui-panel">
+    <button id="style-toggle" class="map-btn"> Manuscript → Satellite → Light </button>
+    <button id="overlay-toggle" class="map-btn">Toggle 1880 Book Map</button>
+    <button id="overlay-toggle-1886" class="map-btn">Toggle 1886 Book Map</button>
+</div>
+
+<div id="map"></div>
+
+<script>
+    mapboxgl.accessToken = 'pk.eyJ1IjoieWFuaGFubGl1MiIsImEiOiJjbW4xdWFqdWEwa3Q3MnhzamtzZ3o4dWx2In0.TDQInIWvgvlpWkX5tnHwaA';
+
+    let currentStyle = 'satellite';
+    let overlayVisible = false;
+    let overlay1886Visible = false;
+
+    const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/satellite-streets-v12',
+        center: [35.2105, 31.8049], 
+        zoom: 8.5,
+        pitch: 0,
+        bearing: 0
+    });
+
+    map.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }));
+
+    // Reusable function to load your Deep Blue Data
+    function addProjectLayers() {
+        // Source for your GeoJSON
+        if (!map.getSource('route-source')) {
+            map.addSource('route-source', {
+                'type': 'geojson',
+                'data': './geojson_output_with_years.json'
+            });
+        }
+
+        // Source for your Historical Image Overlay
+        if (!map.getSource('historical-image')) {
+            map.addSource('historical-image', {
+                'type': 'image',
+                'url': './1881_bookmap.jpeg', 
+                'coordinates': [
+                    [34.50, 33.15], // Top Left [lng, lat]
+                    [36.16, 33.15], // Top Right
+                    [36.00, 30.30], // Bottom Right
+                    [34.15, 30.60]  // Bottom Left
+                ]
+            });
+        }
+
+        if (!map.getSource('historical-image-1886')) {
+            map.addSource('historical-image-1886', {
+                'type': 'image',
+                'url': './1886_bookmap.jpg', // Change to your actual file name
+                'coordinates': [
+                    [35.05, 35.10], // Update these to your 1886 QGIS bounding box
+                    [36.85, 35.10], 
+                    [36.85, 33.05], 
+                    [35.05, 33.05]  
+                ]
+            });
+        }
+
+
+        // 1. Add Image Layer (Hidden by default)
+        map.addLayer({
+            'id': 'overlay-layer',
+            'type': 'raster',
+            'source': 'historical-image',
+            'layout': { 'visibility': overlayVisible ? 'visible' : 'none' },
+            'paint': { 'raster-opacity': 0.9 }
+        });
+
+        map.addLayer({
+            'id': 'overlay-layer-1886',
+            'type': 'raster',
+            'source': 'historical-image-1886',
+            'layout': { 'visibility': overlay1886Visible ? 'visible' : 'none' },
+            'paint': { 'raster-opacity': 0.8 }
+        });
+
+        // 2. Deep Blue Boundary Lines
+        map.addLayer({
+    'id': 'boundary-line',
+    'type': 'line',
+    'source': 'route-source',
+    'filter': ['==', ['get', 'type'], 'boundary'],
+    'paint': {
+        'line-width': 5,
+        'line-opacity': 0.85,
+        'line-color': [
+            'case',
+            // 1881 book routes = Orange
+            ['==', ['get', 'book_year'], 1881], '#E74C3C',
+            // 1883 book routes = Purple  
+            ['==', ['get', 'book_year'], 1883], '#3498DB',
+            // 1886 book routes = Teal
+            ['==', ['get', 'book_year'], 1886], '#F39C12',
+            // Default color for everything else
+            '#0D47A1'
+        ]
+    }
+});
+
+        // 3. Midnight Blue City Points
+        map.addLayer({
+            'id': 'city-points',
+            'type': 'circle',
+            'source': 'route-source',
+            'filter': ['==', ['get', 'type'], 'city'],
+            'paint': {
+                'circle-radius': 8,
+                'circle-color': '#F4E4BC',
+                'circle-stroke-width': 2,
+                'circle-stroke-color': '#6B4E31'
+            }
+        });
+
+        // Enable Clicks
+        map.on('click', 'boundary-line', showFeaturePopup);
+        map.on('click', 'city-points', showFeaturePopup);
+    }
+
+    map.on('load', addProjectLayers);
+
+    // Style Toggler Logic
+    let styleIndex = 0;
+    const styles = [
+        'mapbox://styles/dawnnn/cmn3aswde000v01qu4m9j6dqq',  // Your Historical Manuscript style
+        'mapbox://styles/mapbox/light-v11',
+        'mapbox://styles/mapbox/satellite-streets-v12'  // Your Historical Manuscript style
+    ];
+
+    document.getElementById('style-toggle').addEventListener('click', () => {
+        styleIndex = (styleIndex + 1) % styles.length;
+        map.setStyle(styles[styleIndex]);
+        map.once('style.load', addProjectLayers);
+    });
+
+    // Image Overlay Toggler Logic
+    document.getElementById('overlay-toggle').addEventListener('click', () => {
+        overlayVisible = !overlayVisible;
+        const visibility = overlayVisible ? 'visible' : 'none';
+        map.setLayoutProperty('overlay-layer', 'visibility', visibility);
+        
+        // Visual feedback for button
+        document.getElementById('overlay-toggle').classList.toggle('active-overlay');
+    });
+
+    document.getElementById('overlay-toggle-1886').addEventListener('click', () => {
+        overlay1886Visible = !overlay1886Visible;
+        const visibility = overlay1886Visible ? 'visible' : 'none';
+        map.setLayoutProperty('overlay-layer-1886', 'visibility', visibility);
+        document.getElementById('overlay-toggle-1886').classList.toggle('active-overlay');
+    });
+
+    // POPUP LOGIC (Assuming your media is a stringified JSON array in the GeoJSON)
+    function showFeaturePopup(e) {
+        const props = e.features[0].properties;
+        let media = typeof props.media === 'string' ? JSON.parse(props.media) : props.media;
+        
+        let cards = media.map(item => `
+            <div class="item-card">
+                <div style="font-weight:bold; color:#0D47A1; margin-bottom:8px;">${item.caption || ""}</div>
+                <img class="popup-img" src="${item.image}">
+                <div class="popup-text">${item.text || ""}</div>
+            </div>
+        `).join('');
+
+        new mapboxgl.Popup()
+            .setLngLat(e.lngLat)
+            .setHTML(`
+                <div class="popup-header"><h3>${props.from ? `${props.from} → ${props.to}` : (props.name || 'Route')}</h3></div>
+                <div class="popup-scroll-container">${cards}</div>
+            `)
+            .addTo(map);
+    }
+</script>
+</body>
+</html>
