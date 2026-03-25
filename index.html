@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="W@nder Travelogues - Historical GIS mapping project">
+  <meta name="author" content="Dawn Zhuang, KU Leuven">
+  <title>W@nder Travelogues - KU Leuven Historical GIS Project</title>
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+  <!-- Font Awesome icons (free version) -->
+  <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+  <!-- Google fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Varela+Round" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+  <!-- Core theme CSS (includes Bootstrap) -->
+  <link href="css/styles.css" rel="stylesheet">
+  <!-- Custom styles for midnight blue theme & map -->
+  <style>
+    /* Midnight blue color scheme matching map (0D47A1 primary) */
+    :root {
+      --primary-color: #F4E4BC;
+      --secondary-color: #E74C3C;
+      --accent-gold: #D4B896;
+    }
+    .navbar-light .navbar-brand, .nav-link {
+      color: var(--primary-color) !important;
+    }
+    .navbar-light .navbar-brand:focus, .navbar-light .navbar-brand:hover {
+      color: #0D47A1 !important;
+    }
+    .btn-primary {
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+    .btn-primary:hover {
+      background-color: #0a3a7e;
+      border-color: #0a3a7e;
+    }
+    .masthead {
+      background: linear-gradient(135deg);
+    }
+    .text-primary-custom { color: var(--primary-color) !important; }
+    .bg-primary-custom { background-color: var(--primary-color) !important; }
+    
+    /* Map iframe styling */
+    #map-section iframe {
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(13,71,161,0.3);
+      transition: all 0.3s ease;
+      width: 100%;
+    }
+    #map-section iframe:hover {
+      box-shadow: 0 20px 40px rgba(13,71,161,0.4);
+      transform: translateY(-2px);
+    }
+    .page-section-custom {
+      padding: 80px 0;
+    }
+    .project-list {
+      list-style: none;
+      padding-left: 0;
+    }
+    .project-list li {
+      margin-bottom: 8px;
+      position: relative;
+      padding-left: 20px;
+    }
+    .project-list li:before {
+      content: "▸";
+      color: var(--primary-color);
+      position: absolute;
+      left: 0;
+    }
+  </style>
+</head>
+<body id="page-top">
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container px-4 px-lg-5">
+      <a class="navbar-brand" href="#page-top">W@nder Travelogues</a>
+      <button class="navbar-toggler navbar-toggler-right" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarResponsive">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="#project">Project</a></li>
+          <li class="nav-item"><a class="nav-link" href="#data">Data</a></li>
+          <li class="nav-item"><a class="nav-link" href="#team">Team</a></li>
+          <li class="nav-item"><a class="nav-link" href="#map-section">Map</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Masthead -->
+  <header class="masthead">
+    <div class="container px-4 px-lg-5 d-flex h-100 align-items-center justify-content-center">
+      <div class="d-flex justify-content-center">
+        <div class="text-center">
+          <h1 class="mx-auto my-0 text-uppercase text-white">W@nder Travelogues</h1>
+          <h2 class="text-white-50 mx-auto mt-2 mb-5">Evoke the multi-sensory experience of travel on a map</h2>
+          <a class="btn btn-primary btn-xl" href="#map-section">Launch Interactive Map</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Project Section (replaces About) -->
+  <section class="page-section-custom bg-light" id="project">
+    <div class="container px-4 px-lg-5">
+      <h2 class="text-center mt-0 text-primary-custom">Project Overview</h2>
+      <hr class="divider" />
+      <div class="row gx-4 gx-lg-5 justify-content-center">
+        <div class="col-lg-10">
+          <p class="lead text-dark text-center mb-5">To evoke the multi-sensory experience of travel, we aim to present travelogues textually, visually and spatially. For our project, we chose to do a deep dive into “The Land and the Book”, a nineteenth century travelogue of Palestine and a Biblical narrative by the American Protestant missionary William McClure Thomson (1806-1894). The work combines travel description, ethnographic observation, and biblical commentary based on Thomson’s travels in Ottoman-era Syria and Palestine. To explore this travelogue computationally, we created an interactive map interface with clickable locations points, displaying image and text pairings from the travelogue.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Data & Team (replaces Projects/Signup) -->
+  <section class="page-section-custom" id="data">
+    <div class="container px-4 px-lg-5">
+      <div class="row gx-4 gx-lg-5">
+        <div class="col-lg-6">
+          <h3 class="text-primary-custom mb-4">Data Sources</h3>
+          <ul class="project-list lead text-muted">
+            <li>“The Land and the Book”, a nineteenth century travelogue of Palestine and a Biblical narrative by the American Protestant missionary William McClure Thomson (1806-1894)</li>
+          </ul>
+        </div>
+        <div class="col-lg-6" id="team">
+          <h3 class="text-primary-custom mb-4">Project Team</h3>
+          <div class="text-muted lead">
+            <p><i class="fas fa-user-circle fa-2x text-primary-custom mb-3"></i><br><strong>name1</strong><br>
+            Faculty of Arts<br>
+            <small class="text-primary-custom">KU Leuven</small></p>
+            <p><i class="fas fa-user-circle fa-2x text-primary-custom mb-3"></i><br><strong>name2</strong><br>
+            Faculty of Arts<br>
+            <small class="text-primary-custom">KU Leuven</small></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Map Section (replaces Contact) -->
+  <section class="page-section-custom bg-light" id="map-section">
+    <div class="container px-4 px-lg-5">
+      <h2 class="text-center mt-0 mb-5 text-primary-custom">Interactive Map</h2>
+      <div class="row gx-4 gx-lg-5 justify-content-center">
+        <div class="col-lg-10">
+          <div class="text-center mb-5">
+            <p class="lead text-muted">Toggle 1881/1883/1886 overlays, switch styles (manuscript/satellite), click routes for images & captions.</p>
+          </div>
+          <iframe src="new_map.html" height="750" frameborder="0" allowfullscreen loading="lazy"></iframe>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer bg-primary-custom small text-center text-white-50">
+    <div class="container px-4 px-lg-5">&copy; W@nder Travelogues 2026 | KU Leuven Bibliotech Hackathon 2026</div>
+  </footer>
+
+  <!-- Bootstrap core JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Core theme JS -->
+  <script src="js/scripts.js"></script>
+</body>
+</html>
